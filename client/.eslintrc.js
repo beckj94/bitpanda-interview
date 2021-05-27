@@ -8,15 +8,15 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-
     '@vue/typescript',
     'plugin:vue/essential',
-
     'airbnb-base',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
   ],
   parserOptions: {
     extraFileExtensions: ['.vue'],
@@ -26,9 +26,24 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
+  settings: {
+    'import/resolver': {
+      'node': {
+        'extensions': ['.js', '.jsx', '.ts', '.tsx']
+      }
+    }
+  },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-shadow': 'off',
+    'import/no-unresolved': 'off',
+    '@typescript-eslint/no-shadow': ['error'],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
+    'no-return-assign': 'off',
+    'no-param-reassign': 'off',
     'import/order': ['error', {
       alphabetize: {
         caseInsensitive: true,
@@ -51,6 +66,14 @@ module.exports = {
         {
           group: 'internal',
           pattern: '@components/**',
+        },
+        {
+          group: 'internal',
+          pattern: '@components/icons/**',
+        },
+        {
+          group: 'internal',
+          pattern: '@views/**',
         },
       ],
       pathGroupsExcludedImportTypes: [],

@@ -1,20 +1,20 @@
 <template lang="pug">
-  .pagination-section
-    .pagination-section__button-block
-      button.pagination-section__button(
+  .pagination-wrapper
+    .pagination-wrapper__button-wrapper
+      button.pagination-wrapper__button(
         @click="$emit('onChangePage', Pages.Prev)"
         :class="{ inactive: !todoMeta.hasPrevPage }"
       )
-        img.pagination-section__img(
+        img.pagination-wrapper__icon(
           src="@/assets/icons/chevron-left.svg"
           width="20em"
         )
-      .pagination-section__separator
-      button.pagination-section__button(
+      div |
+      button.pagination-wrapper__button(
         @click="$emit('onChangePage', Pages.Next)"
         :class="{ inactive: !todoMeta.hasNextPage }"
       )
-        img.pagination-section__img(
+        img.pagination-wrapper__icon(
           src="@/assets/icons/chevron-right.svg"
           width="20em"
         )
@@ -43,26 +43,22 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-  .pagination-section {
+  @import '@/assets/scss/app.scss';
+  .pagination-wrapper {
     display: flex;
     justify-content: flex-end;
-    .pagination-section__button-block {
-      background-color: var(--color-white);
+    .pagination-wrapper__button-wrapper {
+      background-color: $color-white;
       display: flex;
       align-items: center;
-      padding: var(--space-xs) 0;
-      border: 1px solid var(--color-grey-3);
-      border-radius: var(--space-m);
-      .pagination-section__button {
-        padding: 0 var(--space-m);
+      padding: $em-half 0;
+      border: 1px solid $color-grey;
+      border-radius: $em-1;
+      .pagination-wrapper__button {
         display: flex;
       }
-      .pagination-section__img {
-        height: 20px;
-      }
-      .pagination-section__separator {
-        border-left: 1px solid var(--color-grey-5);
-        height: 100%;
+      .pagination-wrapper__icon {
+        height: 1.25em;
       }
     }
   }

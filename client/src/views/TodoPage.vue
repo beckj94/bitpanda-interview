@@ -1,15 +1,20 @@
 <template lang="pug">
   .container
+    template(v-if="errors")
+      div.alert-popup
+        span(
+          v-for="error in errors"
+        ) {{error}}
     template(v-if="todoData")
-      .search-input
-        button(@click="onSearch")
+      div.search-input-wrapper
+        button(@click="search")
           img(
             src="@/assets/icons/search.svg"
             width='20em'
           )
-        input.search-input__input(
+        input.search-input-wrapper__input(
           v-model="searchString"
-          @keyup.enter="onSearch"
+          @keyup.enter="search"
           placeholder="Search"
         )
         button(
@@ -20,7 +25,7 @@
             src="@/assets/icons/times.svg"
             width='10em'
           )
-      .add-todo(
+      div.add-todo(
         v-if="todoData"
         :class="{ 'add-todo_bottom-round': todoData.items.length === 0 }"
       )
@@ -47,12 +52,14 @@
         Pagination(
           v-if="todoData.meta.pageCount > 1"
           :todoMeta = "todoData.meta"
-          @onChangePage="handlePagination($event)"
+          @onChangePage="changePage($event)"
         )
       template(v-else)
-        .empty-list-msg You're all cuaght up with your todos!
+        .empty-list-msg No todos here.
     template(v-else)
-      img.loader(src="@/assets/icons/spinner.svg")
+      div.loader-wrapper
+        img.loader-wrapper__icon(src="@/assets/icons/spinner.svg")
+        span Loading...
 </template>
 
 <script lang="ts">
@@ -71,6 +78,7 @@ import {
   TodoList,
   TodoItem,
   PaginationSteps,
+  ErrorList,
 } from '@/interfaces';
 
 export default defineComponent({
@@ -81,6 +89,7 @@ export default defineComponent({
   },
   setup() {
     const todoData = ref<TodoList | null>(null);
+    const errors = ref<ErrorList | null>(null);
     const newTodoDescription = ref<string>('');
     const searchString = ref<string>('');
     const urlOffset = ref<number>(0);
@@ -90,7 +99,11 @@ export default defineComponent({
       const confirmStatus = window.confirm('Do you really want to delete this item?');
 
       if (confirmStatus) {
-        API.deleteTodo(id, () => API.getTodoData(todoData, searchString.value, urlOffset.value));
+        API.deleteTodo(
+          id,
+          errors,
+          () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
+        );
       }
     }
 
@@ -100,46 +113,51 @@ export default defineComponent({
 
         if (page > pageCount) {
           urlOffset.value = (limit * pageCount) - limit;
-          API.getTodoData(todoData, searchString.value, urlOffset.value);
+          API.getTodoData(todoData, errors, searchString.value, urlOffset.value);
         }
       }
     }
 
-    function updateStatus(i: TodoItem) {
-      API.updateStatus(i, () => API.getTodoData(todoData, searchString.value, urlOffset.value));
+    function updateStatus(item: TodoItem) {
+      API.updateStatus(
+        item,
+        errors,
+        () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
+      );
     }
 
     function onCreateNewTodo() {
       if (newTodoDescription.value.length) {
         API.createNewTodo(
           newTodoDescription.value,
-          () => API.getTodoData(todoData, searchString.value, urlOffset.value),
+          errors,
+          () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
         );
       }
 
       newTodoDescription.value = '';
     }
 
-    function onSearch() {
+    function search() {
       urlOffset.value = 0;
-      API.getTodoData(todoData, searchString.value, urlOffset.value);
+      API.getTodoData(todoData, errors, searchString.value, urlOffset.value);
     }
 
     function clearSearch() {
       searchString.value = '';
-      onSearch();
+      search();
     }
 
-    function handlePagination(v: keyof PaginationSteps) {
-      const p = todoData.value?.meta[v];
+    function changePage(index: keyof PaginationSteps) {
+      const pageNum = todoData.value?.meta[index];
 
-      if (todoData.value && p) {
-        urlOffset.value = (todoData.value.meta.limit * p) - todoData.value.meta.limit;
-        API.changePagination(urlOffset.value, todoData, searchString.value);
+      if (todoData.value && pageNum) {
+        urlOffset.value = (todoData.value.meta.limit * pageNum) - todoData.value.meta.limit;
+        API.changePagination(urlOffset.value, errors, todoData, searchString.value);
       }
     }
 
-    onMounted(() => API.getTodoData(todoData, searchString.value, urlOffset.value));
+    onMounted(() => API.getTodoData(todoData, errors, searchString.value, urlOffset.value));
     watchEffect(() => updatePagination());
     return {
       todoData,
@@ -148,9 +166,9 @@ export default defineComponent({
       newTodoDescription,
       onCreateNewTodo,
       searchString,
-      onSearch,
+      search,
       clearSearch,
-      handlePagination,
+      changePage,
     };
   },
 });
@@ -159,24 +177,33 @@ export default defineComponent({
 <style lang="scss">
   @import '@/assets/scss/app.scss';
   .container {
-    width: 100%;
-    max-width: 590px;
-    margin: auto;
-    padding: $em-5;
+    width: 60vw;
+    max-width: 100%;
+    padding: $em-3;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
   }
-  .search-input {
+  .alert-popup {
+    background-color: $color-error-background;
+    padding: 1em;
+    border-radius: 0.5em;
+    margin-bottom: 2em;
+    color: $color-error;
+  }
+  .search-input-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: $em-2;
     padding: $em-half;
-    background-color: $color-grey-3;
+    background-color: $color-grey-dark;
     border-radius: $em-1;
-    .search-input__input {
+    .search-input-wrapper__input {
       font-weight: 300;
       width: 100%;
       &::placeholder {
-        color: $color-grey-5;
+        color: $color-grey-darker;
       }
     }
   }
@@ -185,15 +212,15 @@ export default defineComponent({
     padding: $em-1 $em-1;
     background-color: $color-white;
     border-radius: $em-1 $em-1 0 0;
-    border: 1px solid $color-grey-3;
-    color: $color-grey-3;
+    border: 1px solid $color-grey;
+    color: $color-grey;
     &.add-todo_bottom-round {
       border-radius: $em-3;
     }
     .add-todo__input {
       width: 100%;
       &::placeholder {
-        color: $color-grey-4;
+        color: $color-grey-dark;
       }
     }
   }
@@ -201,17 +228,30 @@ export default defineComponent({
     margin-bottom: $em-3;
     background-color: $color-white;
     border-radius: 0 0 $em-1 $em-1;
-    border: 1px solid $color-grey-3;
+    border: 1px solid $color-grey;
     border-top: none;
   }
   .empty-list-msg {
     margin: $em-5;
     text-align: center;
-    font-size: var(--space-xl);
+    font-size: 2em;
   }
-  .loader {
-    position: absolute;
-    right: 50%;
-    transform: translate3d(50%, -50%, 0);
+  .loader-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .loader-wrapper__icon {
+      width: 2em;
+      margin-right: $em-1;
+      animation: rotating 2s linear infinite;
+    }
+  }
+  @keyframes rotating {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>

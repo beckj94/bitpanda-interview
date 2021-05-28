@@ -18,17 +18,8 @@ export default defineComponent({
 
 <style lang="scss">
 @import '@/assets/scss/app.scss';
-.todo-app {
+#app {
   display: flex;
-  margin: auto;
-  width: 100%;
-  min-height: 100vh;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 300;
-  background-color: var(--color-grey-2);
-}
-.inactive {
-  pointer-events: none;
-  opacity: .5;
+  justify-content: center;
 }
 </style>

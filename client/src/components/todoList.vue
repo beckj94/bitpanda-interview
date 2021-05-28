@@ -17,7 +17,7 @@
         )
       span.todo-item__description {{props.todoItemData.description}}
     div.todo-item__right
-      span.todo-item__age {{calcTodoAge()}}
+      span.todo-item__age {{getTodoAge()}}
       button(
         class="delete-item-button"
         @click="$emit('onDeleteTodoItem', props.todoItemData._id)"
@@ -45,25 +45,25 @@ export default defineComponent({
   },
   emits: ['onDeleteTodoItem', 'onUpdateDoneTodoItem'],
   setup(props) {
-    const computeAgeString = (age: number, units: TimeUnits) => `${age} ${units}${age === 1 ? '' : 's'}`;
+    const ageString = (age: number, units: TimeUnits) => `${age} ${units}${age === 1 ? '' : 's'}`;
 
-    function calcTodoAge() {
+    function getTodoAge() {
       let age = '';
       const diff: number = Date.now() - Date.parse(props.todoItemData.createdAt);
 
       if ((diff / (1000 * 60 * 60 * 24)) > 1) {
-        age = computeAgeString(Math.round(diff / (1000 * 60 * 60 * 24)), TimeUnits.Day);
+        age = ageString(Math.round(diff / (1000 * 60 * 60 * 24)), TimeUnits.Day);
       } else if ((diff / (1000 * 60 * 60)) > 1) {
-        age = computeAgeString(Math.round(diff / (1000 * 60 * 60)), TimeUnits.Hour);
+        age = ageString(Math.round(diff / (1000 * 60 * 60)), TimeUnits.Hour);
       } else {
-        age = computeAgeString(Math.round(diff / (1000 * 60)), TimeUnits.Minute);
+        age = ageString(Math.round(diff / (1000 * 60)), TimeUnits.Minute);
       }
 
       return age;
     }
-    computed(() => calcTodoAge());
+    computed(() => getTodoAge());
     return {
-      calcTodoAge,
+      getTodoAge,
       props,
     };
   },
@@ -77,9 +77,9 @@ export default defineComponent({
     align-items: center;
     justify-content: space-between;
     padding: $em-half $em-half;
-    border-top: 1px solid $color-grey-3;
+    border-top: 1px solid $color-grey;
     &:hover {
-      .todo-item .delete-item-button  {
+      .todo-item .delete-item-button {
         opacity: .5;
       }
     }
@@ -104,7 +104,7 @@ export default defineComponent({
       width: $em-3;
       height: $em-3;
       display: flex;
-      border: 1px solid $color-grey-3;
+      border: 1px solid $color-grey;
       border-radius: $em-2;
       .todo-item_img{
         margin: auto;
@@ -113,7 +113,7 @@ export default defineComponent({
     .todo-item__age {
       margin: auto $em-half;
       font-size: smaller;
-      color: $color-grey-4;
+      color: $color-grey-dark;
       white-space: nowrap;
       margin-left: $em-2;
     }
@@ -122,12 +122,9 @@ export default defineComponent({
     }
   }
   .todo-item_done {
-    color: $color-grey-4;
+    color: $color-grey-dark;
     .todo-item__description {
       text-decoration:line-through;
     }
-    // .todo-item__status-marker {
-      // border-color: $color-green-1;
-    // }
   }
 </style>

@@ -1,10 +1,13 @@
 <template lang="pug">
   .container
     template(v-if="errors")
-      div.alert-popup
+      div.alert-popup.alert-popup--error
         span(
-          v-for="error in errors"
-        ) {{error}}
+          v-for="(errorType, key) in errors"
+        ) {{error.key}}
+    template(v-if="successMessage != ''")
+      div.alert-popup.alert-popup--success
+        span {{successMessage}}
     template(v-if="todoData")
       div.search-input-wrapper
         button(@click="search")
@@ -79,6 +82,7 @@ import {
   TodoItem,
   PaginationSteps,
   ErrorList,
+  // SuccessList,
 } from '@/interfaces';
 
 export default defineComponent({
@@ -90,9 +94,15 @@ export default defineComponent({
   setup() {
     const todoData = ref<TodoList | null>(null);
     const errors = ref<ErrorList | null>(null);
+    const successMessage = ref<string>('');
     const newTodoDescription = ref<string>('');
     const searchString = ref<string>('');
     const urlOffset = ref<number>(0);
+
+    function showSuccessMessage(message: string) {
+      successMessage.value = message;
+      setTimeout(() => successMessage.value = '', 3000);
+    }
 
     function deleteTodoItem(id: string) {
       // eslint-disable-next-line
@@ -102,7 +112,10 @@ export default defineComponent({
         API.deleteTodo(
           id,
           errors,
-          () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
+          () => {
+            showSuccessMessage('Todo successfully deleted!');
+            API.getTodoData(todoData, errors, searchString.value, urlOffset.value);
+          },
         );
       }
     }
@@ -122,7 +135,10 @@ export default defineComponent({
       API.updateStatus(
         item,
         errors,
-        () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
+        () => {
+          showSuccessMessage('Todo successfully updated!');
+          API.getTodoData(todoData, errors, searchString.value, urlOffset.value);
+        },
       );
     }
 
@@ -131,7 +147,10 @@ export default defineComponent({
         API.createNewTodo(
           newTodoDescription.value,
           errors,
-          () => API.getTodoData(todoData, errors, searchString.value, urlOffset.value),
+          () => {
+            showSuccessMessage('Todo successfully created!');
+            API.getTodoData(todoData, errors, searchString.value, urlOffset.value);
+          },
         );
       }
 
@@ -169,6 +188,8 @@ export default defineComponent({
       search,
       clearSearch,
       changePage,
+      errors,
+      successMessage,
     };
   },
 });
@@ -185,11 +206,17 @@ export default defineComponent({
     flex-direction: column;
   }
   .alert-popup {
-    background-color: $color-error-background;
     padding: 1em;
     border-radius: 0.5em;
     margin-bottom: 2em;
-    color: $color-error;
+    &.alert-popup--error {
+      background-color: $color-error-background;
+      color: $color-error;
+    }
+    &.alert-popup--success {
+      background-color: $color-success-background;
+      color: $color-success;
+    }
   }
   .search-input-wrapper {
     display: flex;

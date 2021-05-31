@@ -38,6 +38,10 @@ export enum Pages {
   Prev = 'prevPage'
 }
 
-export type ErrorList ={
+export type ErrorList = {
   errors: []
+}
+
+export interface SuccessList {
+  message: string;
 }

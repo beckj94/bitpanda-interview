@@ -1,6 +1,11 @@
 import { Ref } from '@vue/composition-api';
 
-import { TodoList, TodoItem, ErrorList } from '@/interfaces';
+import {
+  TodoList,
+  TodoItem,
+  ErrorList,
+  // SuccessList,
+} from '@/interfaces';
 
 const apiUrl = 'http://localhost:3000/api/v1';
 
@@ -35,6 +40,9 @@ export function deleteTodo(
 export function updateStatus(
   item: TodoItem,
   errors: Ref<ErrorList | null>,
+  // messages: Ref<SuccessList | null]>,
+  // messages: SuccessList,
+  // messages: SuccessList[] = [],
   onSuccess: () => void,
 ) {
   fetch(`${apiUrl}/todo/${item._id}`, { // eslint-disable-line no-underscore-dangle
@@ -48,6 +56,7 @@ export function updateStatus(
   })
     .then((r) => {
       if (r.ok) {
+        // messages = 'lol fag';
         onSuccess();
       }
     })
